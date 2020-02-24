@@ -3,7 +3,7 @@
 
 #define EPSILON 0.00000001
 
-bool ofxPointInMesh::isInside(const ofVec3f & point, const ofMesh & mesh){
+bool ofxPointInMesh::isInside(const glm::vec3 & point, const ofMesh & mesh){
 
 	// check mesh mode (only OF_PRIMITIVE_TRIANGLES works correctly)
 	static bool warning_given;
@@ -15,9 +15,9 @@ bool ofxPointInMesh::isInside(const ofVec3f & point, const ofMesh & mesh){
 		return false;
 	}
 
-	ofVec3f foundIntersection; // variable to store a single found intersection
-	vector <ofVec3f> results; // vector to store all found intersections
-	ofVec3f randomDirection = ofVec3f(0.1, 0.2, 0.3); // a random direction
+	glm::vec3 foundIntersection; // variable to store a single found intersection
+	vector <glm::vec3> results; // vector to store all found intersections
+	glm::vec3 randomDirection = glm::vec3(0.1, 0.2, 0.3); // a random direction
 
 	// go over all faces in the mesh
 	const vector <ofMeshFace> & faces = mesh.getUniqueFaces();
@@ -31,7 +31,7 @@ bool ofxPointInMesh::isInside(const ofVec3f & point, const ofMesh & mesh){
 	}
 
 	// handle multiple mesh intersections at the same point (by removing duplicates)
-	vector <ofVec3f> unique_results;
+	vector <glm::vec3> unique_results;
 	unique_copy(results.begin(), results.end(), back_inserter(unique_results));
 
 	// determine if the point is inside or outside the mesh, based on the number of unique intersections
@@ -44,13 +44,13 @@ bool ofxPointInMesh::isInside(const ofVec3f & point, const ofMesh & mesh){
 }
 
 // Möller–Trumbore: http://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
-bool ofxPointInMesh::triangleIntersection(const ofMeshFace & face, const ofVec3f & O, const ofVec3f & D, ofVec3f & R){
-	const ofVec3f & V1 = face.getVertex(0);
-	const ofVec3f & V2 = face.getVertex(1);
-	const ofVec3f & V3 = face.getVertex(2);
+bool ofxPointInMesh::triangleIntersection(const ofMeshFace & face, const glm::vec3 & O, const glm::vec3 & D, glm::vec3 & R){
+	const glm::vec3 & V1 = face.getVertex(0);
+	const glm::vec3 & V2 = face.getVertex(1);
+	const glm::vec3 & V3 = face.getVertex(2);
 
-	ofVec3f e1, e2; //Edge1, Edge2
-	ofVec3f P, Q, T;
+	glm::vec3 e1, e2; //Edge1, Edge2
+	glm::vec3 P, Q, T;
 	float det, inv_det, u, v;
 	float t;
 
@@ -58,9 +58,9 @@ bool ofxPointInMesh::triangleIntersection(const ofMeshFace & face, const ofVec3f
 	e1 = V2 - V1;
 	e2 = V3 - V1;
 	//Begin calculating determinant - also used to calculate u parameter
-	P = D.getCrossed(e2);
+	P = glm::cross(D, e2);
 	//if determinant is near zero, ray lies in plane of triangle
-	det = e1.dot(P);
+	det = glm::dot(e1, P);
 	//NOT CULLING
 	if(det > -EPSILON && det < EPSILON){
 		return false;
@@ -71,23 +71,23 @@ bool ofxPointInMesh::triangleIntersection(const ofMeshFace & face, const ofVec3f
 	T = O - V1;
 
 	//Calculate u parameter and test bound
-	u = T.dot(P) * inv_det;
+	u = glm::dot(T, P) * inv_det;
 	//The intersection lies outside of the triangle
 	if(u < 0.f || u > 1.f){
 		return false;
 	}
 
 	//Prepare to test v parameter
-	Q = T.getCrossed(e1);
+	Q = glm::cross(T, e1);
 
 	//Calculate V parameter and test bound
-	v = D.dot(Q) * inv_det;
+	v = glm::dot(D, Q) * inv_det;
 	//The intersection lies outside of the triangle
 	if(v < 0.f || u + v  > 1.f){
 		return false;
 	}
 
-	t = e2.dot(Q) * inv_det;
+	t = glm::dot(e2, Q) * inv_det;
 
 	if(t > EPSILON){ //ray intersection
 		R = O + t * D; // store intersection point

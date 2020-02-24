@@ -5,8 +5,8 @@
 class ofxPointInMesh {
 
 	public:
-		static bool isInside(const ofVec3f & point, const ofMesh & mesh);
+		static bool isInside(const glm::vec3 & point, const ofMesh & mesh);
 
 	private:
-		static bool triangleIntersection(const ofMeshFace & face, const ofVec3f & O, const ofVec3f & D, ofVec3f & R);
+		static bool triangleIntersection(const ofMeshFace & face, const glm::vec3 & O, const glm::vec3 & D, glm::vec3 & R);
 };
